@@ -49,7 +49,7 @@
                     <div class="card my-2">
                         <div class="card-header">
                             {{ review.user.username }} rated {{ review.rating }}
-
+                            <a class="btn btn-light" href="{% url 'books:review-delete' book.pk %}">Delete</a>
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">       {{ review.user.username }}</h5>

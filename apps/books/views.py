@@ -1,5 +1,7 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.forms import SlugField
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views import View
 
@@ -12,7 +14,6 @@ import ssl
 from email.message import EmailMessage
 import uuid
 from django.conf import settings
-
 
 
 class BookListView(View):
@@ -40,7 +41,7 @@ class BookDetailView(View):
         return render(request, "books/book-detail.html", context=context)
 
 
-EMAIL_HOST='smtp.gmail.com'
+EMAIL_HOST = 'smtp.gmail.com'
 
 
 class AddReviewView(View):
@@ -61,14 +62,14 @@ class AddReviewView(View):
             print(user, body, rating)
             self.send_admin_message(email=user.email, body=body, rating=rating)
             return redirect(reverse("books:book-detail", kwargs={"slug": book.slug}))
-        
+
         else:
             context = {
                 "book": book,
                 "form": form
             }
             return render(request, "books/book-detail.html", context=context)
-        
+
     def send_admin_message(self, email, body, rating):
         EMAIL = 'sh.yuldashbekov@gmail.com'  # Jo'natuvchi pochta manzili
         EMAIL_PASSWORD = 'mflucdiebxcphklh'  # Jo'natuvchi pochta paroli
@@ -81,14 +82,21 @@ class AddReviewView(View):
         em.set_content(msg)
         context = ssl.create_default_context()
         with smtplib.SMTP_SSL(EMAIL_HOST, 465, context=context) as smtp:
-              smtp.login(EMAIL, EMAIL_PASSWORD)
-              smtp.sendmail(EMAIL, email, em.as_string())
-
+            smtp.login(EMAIL, EMAIL_PASSWORD)
+            smtp.sendmail(EMAIL, email, em.as_string())
 
 
 class AddBookView(View):
     def post(self, request, pk):
         pass
-        
 
-        
+
+@login_required()
+def review_delete(request, pk):
+    review = get_object_or_404(BookReview, pk=pk)
+    if request.method == "POST":
+        messages.success(request, "post successfully deleted")
+        review.delete()
+        return redirect(reverse('users:user-profile', kwargs={"username": request.user.username}))
+    else:
+        return render(request, "books/delete-review.html", {"review": review})

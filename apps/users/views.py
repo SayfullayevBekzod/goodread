@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views import View
 from apps.books.models import Book, BookAuthor
-from django.views.generic import CreateView
+from django.views.generic import CreateView, DetailView, TemplateView
 
 from apps.users.forms import UserRegisterForm, UserLoginForm
 
@@ -53,8 +53,9 @@ class UserLogoutView(View):
         messages.success(request, "User successfully loged out")
         return redirect("home")
 
+
 class AddAuthorView(CreateView):
-    template_name = 'create_author.html'
+    template_name = 'users/create_author.html'
     form_class = BookAuthor
 
     def get_context_data(self, **kwargs):
@@ -75,3 +76,7 @@ class AddAuthorView(CreateView):
             return redirect(self.object.get_absolute_url())
         else:
             return self.render_to_response(self.get_context_data(form=form))
+
+
+class UserProfileView(TemplateView):
+    template_name = 'users/user-profile.html'
